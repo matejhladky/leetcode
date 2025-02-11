@@ -1,55 +1,49 @@
 #!/bin/bash
 
 create_problem() {
-    PROBLEM_NUMBER=$1
-    PROBLEM_NAME=$2
-    LANGUAGE=$3
+    INPUT_TITLE=$1
 
-    # create the main problem folder
+    PROBLEM_NUMBER=$(echo "$INPUT_TITLE" | sed -E 's/([0-9]+)\..*/\1/')
+    PROBLEM_NUMBER=$(printf "%04d" "$PROBLEM_NUMBER")
+
+    PROBLEM_NAME=$(echo "$INPUT_TITLE" | sed -E 's/[0-9]+\.\s*(.*)/\1/' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+
     MAIN_FOLDER="${PROBLEM_NUMBER}-${PROBLEM_NAME}"
     mkdir -p "$MAIN_FOLDER"
 
-    # create a subfolder for the language
-    LANGUAGE_FOLDER="${MAIN_FOLDER}/${LANGUAGE}"
-    mkdir -p "$LANGUAGE_FOLDER"
+    for LANGUAGE in "cpp" "python"; do
+        LANGUAGE_FOLDER="${MAIN_FOLDER}/${LANGUAGE}"
+        mkdir -p "$LANGUAGE_FOLDER"
 
-    # create the extension
-    if [ "$LANGUAGE" = "cpp" ]; then
-        EXTENSION="cpp"
-    elif [ "$LANGUAGE" = "python" ]; then
-        EXTENSION="py"
-    elif [ "$LANGUAGE" = "c" ]; then
-        EXTENSION="c"
-    else
-        echo "Unsupported language: $LANGUAGE"
-        exit 1
-    fi
+        if [ "$LANGUAGE" = "cpp" ]; then
+            EXTENSION="cpp"
+        elif [ "$LANGUAGE" = "python" ]; then
+            EXTENSION="py"
+        fi
 
-    # create the solution file
-    SOLUTION_FILE="${LANGUAGE_FOLDER}/${PROBLEM_NAME}.${EXTENSION}"
-    touch "$SOLUTION_FILE"
+        SOLUTION_FILE="${LANGUAGE_FOLDER}/${PROBLEM_NAME}.${EXTENSION}"
+        touch "$SOLUTION_FILE"
 
-    # create a description file
+        if [ "$LANGUAGE" = "cpp" ]; then
+            cat <<EOF > "$SOLUTION_FILE"
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    return 0;
+}
+EOF
+        fi
+    done
+
     DESC_FILE="${MAIN_FOLDER}/desc.md"
     touch "$DESC_FILE"
-    if [ "$LANGUAGE" = "cpp" ]; then
-        echo "#include <iostream>" >> "$SOLUTION_FILE"
-        echo "" >> "$SOLUTION_FILE"
-        echo "using namespace std;" >> "$SOLUTION_FILE"
-        echo "" >> "$SOLUTION_FILE"
-        echo "" >> "$SOLUTION_FILE"
-    fi
 
-    echo "Folder structure created for problem ${PROBLEM_NUMBER}-${PROBLEM_NAME} in ${LANGUAGE}"
+    echo "Folder structure created for problem ${PROBLEM_NUMBER}-${PROBLEM_NAME}"
 }
 
-echo "Enter problem number:"
-read PROBLEM_NUMBER
+echo "Paste the problem title:"
+read PROBLEM_TITLE
 
-echo "Enter problem name:"
-read PROBLEM_NAME
-
-echo "Enter language (e.g. cpp, python):"
-read LANGUAGE
-
-create_problem "$PROBLEM_NUMBER" "$PROBLEM_NAME" "$LANGUAGE"
+create_problem "$PROBLEM_TITLE"
