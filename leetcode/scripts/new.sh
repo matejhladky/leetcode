@@ -30,9 +30,6 @@ create_problem() {
 
 using namespace std;
 
-int main() {
-    return 0;
-}
 EOF
         fi
     done
